@@ -9,11 +9,11 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.comvous</groupId>
-	<artifactId>unavita</artifactId>
+	<artifactId>demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>unavita</name>
-	<description>Rest API for UnaVita Information System</description>
+	<name>demo</name>
+	<description>Rest API Demo</description>
 	<properties>
 		<java.version>19</java.version>
 	</properties>

@@ -1,6 +1,8 @@
 package com.comvous.unavita.security.jwt;
 
 import com.comvous.unavita.exceptions.security.JwtSignatureNotMatchingException;
+import com.comvous.unavita.security.CustomUserDetails;
+import com.comvous.unavita.security.CustomUserDetailsService;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -24,18 +28,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This filter is used to verify the JWT token sent by the client.
+ * If the token is valid, the filter will set the authentication in the SecurityContext.
+ * It's the only step used to authenticate the user that already has a JWT.
+ *
+ */
 @Component
 public class JwtTokenVerifierFilter extends OncePerRequestFilter {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
     private final JwtConfig jwtConfig;
-
+    private final CustomUserDetailsService customUserDetailsService;
     private final HandlerExceptionResolver resolver;
 
     @Autowired
-    public JwtTokenVerifierFilter( JwtConfig jwtConfig, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+    public JwtTokenVerifierFilter( JwtConfig jwtConfig, @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver, CustomUserDetailsService customUserDetailsService) {
         this.jwtConfig = jwtConfig;
         this.resolver = resolver;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -62,8 +72,9 @@ public class JwtTokenVerifierFilter extends OncePerRequestFilter {
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toSet());
 
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
             Authentication authentication = new UsernamePasswordAuthenticationToken(
-                    email,
+                    userDetails,
                     null,
                     simpleGrantedAuthorities
             );

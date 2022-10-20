@@ -44,12 +44,12 @@ public class MyWebSecurityConfiguration {
                 .permitAll()
                 .and()
                 .httpBasic()
+                .authenticationEntryPoint(delegatedAuthenticationEntryPoint)
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).
                 and()
-                .exceptionHandling().accessDeniedHandler(customAccessDeniedHandler)
-                .authenticationEntryPoint(delegatedAuthenticationEntryPoint);
+                .exceptionHandling().accessDeniedHandler(customAccessDeniedHandler);
 
         http.addFilterBefore(jwtTokenVerifierFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -61,7 +61,7 @@ public class MyWebSecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
-    /*@Bean
+    /* @Bean
     public AuthenticationManager authenticationManagerBean(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.eraseCredentials(false)

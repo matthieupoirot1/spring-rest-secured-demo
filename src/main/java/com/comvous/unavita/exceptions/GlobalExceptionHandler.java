@@ -4,6 +4,8 @@ import com.comvous.unavita.exceptions.domain.ResourceNotFoundException;
 import com.comvous.unavita.exceptions.domain.UniquenessException;
 import io.jsonwebtoken.security.SignatureException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,8 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     // handleHttpMediaTypeNotSupported : triggers when the JSON is invalid
     @Override
@@ -197,6 +201,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<Object> handleAll(Exception ex, WebRequest request) {
+        logger.error("Error : {} ", ex.getMessage(), ex);
         List<String> details = new ArrayList<>();
         details.add(ex.getLocalizedMessage());
 

@@ -29,9 +29,9 @@ public class JwtTokenUtil {
         claims.put("authorities", authorities);
 
         return Jwts.builder()
-                .setSubject(String.format("%s,%s", user.getId(), user.getEmail()))
-                .setIssuer(jwtConfig.getTokenIssuer())
                 .setClaims(claims)
+                .setSubject(user.getEmail())
+                .setIssuer(jwtConfig.getTokenIssuer())
                 .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
                 .signWith(jwtConfig.getSecretKey()).compact();
     }

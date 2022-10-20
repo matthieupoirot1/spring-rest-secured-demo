@@ -8,4 +8,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     public User findByEmail(String email);
     public Stream<User> findCustomersByLastNameIgnoreCaseContainingAndFirstNameIgnoreCaseContaining(String lastName, String firstName);
     public Stream<User> findCustomersByLastNameIgnoreCaseContaining(String lastName);
+
+    boolean existsByEmail(String email);
 }

@@ -7,7 +7,7 @@
 
 ## 2. Configuration
 - Create resources/env.properties file. Required properties:
-  - `DB_DATABASE=nameofmariadbdatabase`
+  - `DB_URL=jdbc:mysql://ip:3306/dbName?&useSSL=false&serverTimezone=UTC`
   - `DB_USER=mariadbuser`
   - `DB_PASSWORD=mariadbuserpassword`
 

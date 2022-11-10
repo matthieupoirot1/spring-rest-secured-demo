@@ -44,4 +44,19 @@
   
 #### More thoughts :
 
-![Registration sequence diagram](Registration_Sequence.png?raw=true "Regestration sequence diagram")
+[comment]: # (![Registration sequence diagram](Registration_Sequence.png?raw=true "Regestration sequence diagram")
+- On login, Security process starts mannually : 
+  - `AuthenticationManager` is the entry point of the authentication process.
+  - `AuthenticationProvider` is the interface that is responsible for authenticating the user.
+  - `DaoAuthenticationProvider` is the implementation of the `AuthenticationProvider` interface that is responsible for authenticating a user by using a `UserDetailsService` implementation to retrieve the user details.
+  - Since a `PasswordEncoder` bean is registered, Spring Security will use this one.
+  - Same principle for `UserDetailsService` bean.
+- On `@PreAuthorized` requests :
+  - JwtTokenVerifierFilter is called
+  - It verifies the token
+  - It creates an authentication object with the user email parsed in the token
+  - It sets the authentication in the SecurityContext
+
+P.S. : JwtTokenVerifierFilter is not called on login request because it is not annotated with `@PreAuthorized` annotation.
+
+P.S. : UsernamePasswordAuthenticationFilter is never called but the JwtTokenVerifierFilter is registered before it in the filter chain because it's a good place.

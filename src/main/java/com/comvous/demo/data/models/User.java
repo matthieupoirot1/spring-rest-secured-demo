@@ -1,5 +1,7 @@
 package com.comvous.demo.data.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
@@ -78,6 +80,7 @@ public class User {
 
     @Column(name="password")
     @NotBlank(message = "Le mot de passe est obligatoire.")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() {
         return password;
     }

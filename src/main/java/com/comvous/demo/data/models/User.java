@@ -1,45 +1,47 @@
 package com.comvous.demo.data.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "email")
 public class User {
     private long id;
     private String firstName;
     private String lastName;
     private String email;
     private String password;
-    private String address;
-    private String city;
-    private String zip;
-    private String phone;
-
+    private boolean isTeacher;
     private Collection<Role> roles = new ArrayList<>();
+    private Set<Project> projects = new HashSet<>();
+    private Set<Report> reports = new HashSet<>();
+    private Set<Project> managedProjects = new HashSet<>();
+    private Set<Project> supervisedProjects = new HashSet<>();
+    private Set<Semester> semesters = new HashSet<>();
 
     public User() {
     }
 
-    public User(String firstName, String lastName, String email, String password, String address, String city, String zip, String phone) {
+    public User(String firstName, String lastName, String email, boolean isTeacher, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.isTeacher = isTeacher;
         this.password = password;
-        this.address = address;
-        this.city = city;
-        this.zip = zip;
-        this.phone = phone;
     }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name = "id")
     public long getId() {
         return id;
     }
@@ -48,7 +50,7 @@ public class User {
         this.id = id;
     }
 
-    @Column(name="first_name")
+    @Column(name = "first_name")
     @NotBlank(message = "Le prénom est obligatoire.")
     public String getFirstName() {
         return firstName;
@@ -58,7 +60,7 @@ public class User {
         this.firstName = firstName;
     }
 
-    @Column(name="last_name")
+    @Column(name = "last_name")
     @NotBlank(message = "Le nom est obligatoire.")
     public String getLastName() {
         return lastName;
@@ -68,7 +70,7 @@ public class User {
         this.lastName = lastName;
     }
 
-    @Column(name="email", unique = true)
+    @Column(name = "email", unique = true)
     @NotBlank(message = "L'email est obligatoire.")
     public String getEmail() {
         return email;
@@ -78,7 +80,16 @@ public class User {
         this.email = email;
     }
 
-    @Column(name="password")
+    @Column(name="is_teacher")
+    public boolean isTeacher() {
+        return isTeacher;
+    }
+
+    public void setTeacher(boolean teacher) {
+        isTeacher = teacher;
+    }
+
+    @Column(name = "password")
     @NotBlank(message = "Le mot de passe est obligatoire.")
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() {
@@ -89,51 +100,9 @@ public class User {
         this.password = password;
     }
 
-    @Column(name="address")
-    @NotBlank(message = "L'adresse est obligatoire.")
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @Column(name="city")
-    @NotBlank(message = "La ville est obligatoire.")
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    @Column(name="zip")
-    @NotBlank(message = "Le code postal est obligatoire.")
-    @Pattern(regexp = "^\\d{5}$", message = "Veuillez entrer un code postal valide.")
-    public String getZip() {
-        return zip;
-    }
-
-    public void setZip(String zip) {
-        this.zip = zip;
-    }
-
-    @Column(name="phone")
-    @NotBlank(message = "Le numéro de téléphone est obligatoire.")
-    @Pattern(regexp = "^(06|07)\\d{8}$", message = "Veuillez entrer un numéro de téléphone valide.")
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "appuser_roles",
+            name = "user_role",
             joinColumns = @JoinColumn(name = "appuser_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
@@ -143,5 +112,63 @@ public class User {
 
     public void setRoles(Collection<Role> roles) {
         this.roles = roles;
+    }
+
+    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    @JsonIdentityReference(alwaysAsId = true)
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
+    }
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    public Set<Report> getReports() {
+        return reports;
+    }
+
+    public void setReports(Set<Report> reports) {
+        this.reports = reports;
+    }
+
+    @OneToMany(mappedBy = "projectManager", fetch = FetchType.LAZY)
+    @JsonIdentityReference(alwaysAsId = true)
+    public Set<Project> getManagedProjects() {
+        return managedProjects;
+    }
+
+    public void setManagedProjects(Set<Project> managedProjects) {
+        this.managedProjects = managedProjects;
+    }
+
+    @OneToMany(mappedBy = "supervisor", fetch = FetchType.LAZY)
+    @JsonIdentityReference(alwaysAsId = true)
+    public Set<Project> getSupervisedProjects() {
+        return supervisedProjects;
+    }
+
+    public void setSupervisedProjects(Set<Project> supervisedProjects) {
+        this.supervisedProjects = supervisedProjects;
+    }
+
+    @ManyToMany(mappedBy = "students", fetch = FetchType.LAZY)
+    @JsonIdentityReference(alwaysAsId = true)
+    public Set<Semester> getSemesters() {
+        return semesters;
+    }
+
+    public void setSemesters(Set<Semester> semesters) {
+        this.semesters = semesters;
+    }
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'';
     }
 }

@@ -32,7 +32,7 @@ public class JwtTokenUtil {
                 .setClaims(claims)
                 .setSubject(user.getEmail())
                 .setIssuer(jwtConfig.getTokenIssuer())
-                .setExpiration(new Date(System.currentTimeMillis() + 5 * 60 * 1000))
+                .setExpiration(new Date(System.currentTimeMillis() + 36 * 60 * 60 * 1000))
                 .signWith(jwtConfig.getSecretKey()).compact();
     }
 

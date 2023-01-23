@@ -6,8 +6,7 @@ import javax.persistence.*;
 @Table(name = "roles")
 public class Role {
 
-    public static final String ROLE_ADMIN = "ROLE_ADMIN";
-    public static final String ROLE_USER = "ROLE_USER";
+    public static final String DEFAULT_ROLE = "ROLE_ADMIN";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

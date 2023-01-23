@@ -3,6 +3,7 @@ package com.comvous.demo.security;
 import com.comvous.demo.exceptions.security.CustomAccessDeniedHandler;
 import com.comvous.demo.exceptions.security.DelegatedAuthenticationEntryPoint;
 import com.comvous.demo.security.jwt.JwtTokenVerifierFilter;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true, proxyTargetClass = true)
@@ -23,21 +33,22 @@ public class MyWebSecurityConfiguration {
 
     JwtTokenVerifierFilter jwtTokenVerifierFilter;
 
-    UserDetailsService userDetailsService;
     DelegatedAuthenticationEntryPoint delegatedAuthenticationEntryPoint;
     CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Autowired
-    public MyWebSecurityConfiguration(JwtTokenVerifierFilter jwtTokenVerifierFilter, UserDetailsService userDetailsService, DelegatedAuthenticationEntryPoint delegatedAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
+    public MyWebSecurityConfiguration(JwtTokenVerifierFilter jwtTokenVerifierFilter, DelegatedAuthenticationEntryPoint delegatedAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.jwtTokenVerifierFilter = jwtTokenVerifierFilter;
-        this.userDetailsService = userDetailsService;
         this.delegatedAuthenticationEntryPoint = delegatedAuthenticationEntryPoint;
         this.customAccessDeniedHandler = customAccessDeniedHandler;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf()
+        http
+                // if Spring MVC is on classpath and no CorsConfigurationSource is provided,
+                // Spring Security will use CORS configuration provided to Spring MVC
+                .cors().and().csrf()
                 .disable()
                 .authorizeRequests()
                 .antMatchers("/api/**")
@@ -74,5 +85,27 @@ public class MyWebSecurityConfiguration {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedOrigins(List.of("*"));
+        config.addAllowedHeader("Authorization");
+        config.addAllowedHeader("content-type");
+        config.addAllowedHeader("Access-Control-Allow-Origin");
+        config.addAllowedHeader("Access-Control-Allow-Headers");
+        config.addAllowedHeader("Access-Control-Allow-Methods");
+        config.addAllowedHeader("Access-Control-Request-Headers");
+        config.addAllowedHeader("Access-Control-Request-Method");
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
     }
 }

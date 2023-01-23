@@ -1,57 +1,53 @@
 package com.comvous.demo.controllers;
 
 import com.comvous.demo.data.models.User;
+import com.comvous.demo.data.models.projections.UserDTO;
+import com.comvous.demo.data.models.projections.UserWithReportsDTO;
+import com.comvous.demo.data.repositories.UserRepository;
 import com.comvous.demo.security.facade.AuthenticationFacade;
 import com.comvous.demo.services.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 @Validated
-public class UserController {
+public class UserController extends BaseSecuredCrudController<UserService, UserRepository, User, UserDTO> {
 
-    UserService userService;
-    AuthenticationFacade authenticationFacade;
+    //logger
+    private static final Logger logger = LogManager.getLogger(UserController.class);
     @Autowired
-    public UserController(UserService userService, AuthenticationFacade authenticationFacade) {
-        this.userService = userService;
-        this.authenticationFacade = authenticationFacade;
+    public UserController(UserService userService, ModelMapper modelMapper) {
+        super(userService, modelMapper, UserDTO.class);
     }
 
-    @Operation(security = @SecurityRequirement(name = "basicAuth"))
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    @PostMapping("/generate")
+    public UserDTO generateUser(@RequestBody User user) {
+        logger.info("Generating user");
+        logger.info(user);
+        return modelMapper.map(linkedService.generateUser(user), UserDTO.class);
     }
 
-    @Operation(security = @SecurityRequirement(name = "basicAuth"))
-    @PreAuthorize(value = "hasRole('ROLE_ADMIN')" + "OR principal.user.id == #id")
-    @GetMapping("/users/{id}")
-    public User getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    @GetMapping("/allTeachers")
+    public List<UserDTO> getAllTeachers() {
+        return linkedService.getAllTeachers().stream().map(user -> modelMapper.map(user, UserDTO.class)).toList();
     }
 
-    @Operation(security = @SecurityRequirement(name = "basicAuth"))
-    @PreAuthorize(value = "hasRole('ROLE_ADMIN')" + "OR principal.user.id == #id")
-    @PatchMapping("/users/{id}")
-    public User updateUser(@PathVariable Long id, @Validated @RequestBody User user) {
-        //todo restrict what can be updated
-        return userService.updateUser(id, user);
+    @GetMapping("/semester/{name}")
+    public List<UserDTO> getBySemesterName(@PathVariable String name){
+        return linkedService.getUsersBySemesterName(name).stream().map((user)-> modelMapper.map(user, UserDTO.class)).toList();
     }
 
-
-    @Operation(security = @SecurityRequirement(name = "basicAuth"))
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/users/{id}")
-    public void deleteCustomer(@PathVariable Long id) {
-        userService.deleteUser(id);
+    @GetMapping("/getUsersWithReportsByProjectId/{id}")
+    public List<UserWithReportsDTO> getUsersWithReportsByProjectId(@PathVariable Long id){
+        return linkedService.getUsersWithReportsByProjectId(id).stream().map((user)-> modelMapper.map(user, UserWithReportsDTO.class)).toList();
     }
+
 }

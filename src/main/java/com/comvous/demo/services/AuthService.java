@@ -1,7 +1,6 @@
 package com.comvous.demo.services;
 
 import com.comvous.demo.controllers.payload.LoginRequest;
-import com.comvous.demo.data.models.Role;
 import com.comvous.demo.data.models.User;
 import com.comvous.demo.data.repositories.RoleRepository;
 import com.comvous.demo.data.repositories.UserRepository;
@@ -48,7 +47,7 @@ public class AuthService {
             //encode password using security context encoder
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             //set role default value
-            user.setRoles(List.of(roleRepository.findByName(Role.DEFAULT_ROLE)));
+            user.setRoles(List.of(roleRepository.findByName("ROLE_USER")));
             return userRepository.save(user);
         }
 

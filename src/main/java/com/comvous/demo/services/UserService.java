@@ -1,44 +1,59 @@
 package com.comvous.demo.services;
 
 import com.comvous.demo.data.models.User;
-import com.comvous.demo.data.models.projections.UserDTO;
-import com.comvous.demo.data.models.projections.UserWithReportsDTO;
 import com.comvous.demo.data.repositories.UserRepository;
+import com.comvous.demo.exceptions.domain.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 
 @Service
-public class UserService extends BaseCrudService<UserRepository, User> {
+public class UserService {
 
-    private final PasswordEncoder passwordEncoder;
-
+    private final UserRepository userRepository;
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        super(userRepository);
-        this.passwordEncoder = passwordEncoder;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    //get by id
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Cet utilisateur n'existe pas !")
+        );
     }
 
     //get by email
     public User getUserByEmail(String email) {
-        return linkedRepository.findByEmail(email);
+        return userRepository.findByEmail(email);
     }
 
-    public User generateUser(User user) {
-        //generate user password and set in user
-        user.setPassword(this.passwordEncoder.encode(user.getFirstName().toLowerCase().charAt(0) + user.getLastName().toLowerCase()));
-        return linkedRepository.save(user);
+    //get all
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
-    public List<User> getUsersBySemesterName(String name){
-        return this.linkedRepository.findAllBySemesterName(name);
+    //update
+    public User updateUser(Long id, User user) {
+        User userToUpdate = userRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Cet utilisateur n'existe pas !")
+        );
+        userToUpdate.setFirstName(user.getFirstName());
+        userToUpdate.setLastName(user.getLastName());
+        userToUpdate.setEmail(user.getEmail());
+        userToUpdate.setPhone(user.getPhone());
+        userToUpdate.setAddress(user.getAddress());
+        userToUpdate.setCity(user.getCity());
+        userToUpdate.setZip(user.getZip());
+        return userRepository.save(userToUpdate);
     }
 
-    public List<User> getAllTeachers() {
-        return this.linkedRepository.findAllByTeacher(true);
+    //delete
+    public void deleteUser(Long id) {
+        User userToDelete = userRepository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Cet utilisateur n'existe pas !")
+        );
+        userRepository.delete(userToDelete);
     }
-
 }
